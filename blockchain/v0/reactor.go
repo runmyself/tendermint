@@ -9,6 +9,7 @@ import (
 
 	bc "github.com/tendermint/tendermint/blockchain"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/node/l2"
 	"github.com/tendermint/tendermint/p2p"
 	bcproto "github.com/tendermint/tendermint/proto/tendermint/blockchain"
 	sm "github.com/tendermint/tendermint/state"
@@ -51,6 +52,8 @@ func (e peerError) Error() string {
 type BlockchainReactor struct {
 	p2p.BaseReactor
 
+	l2node l2.L2node
+
 	// immutable
 	initialState sm.State
 
@@ -64,7 +67,7 @@ type BlockchainReactor struct {
 }
 
 // NewBlockchainReactor returns new reactor instance.
-func NewBlockchainReactor(state sm.State, blockExec *sm.BlockExecutor, store *store.BlockStore,
+func NewBlockchainReactor(l2node l2.L2node, state sm.State, blockExec *sm.BlockExecutor, store *store.BlockStore,
 	fastSync bool) *BlockchainReactor {
 
 	if state.LastBlockHeight != store.Height() {
@@ -85,6 +88,7 @@ func NewBlockchainReactor(state sm.State, blockExec *sm.BlockExecutor, store *st
 
 	bcR := &BlockchainReactor{
 		initialState: state,
+		l2node:       l2node,
 		blockExec:    blockExec,
 		store:        store,
 		pool:         pool,
@@ -394,6 +398,8 @@ FOR_LOOP:
 
 			// TODO: batch saves so we dont persist to disk every block
 			bcR.store.SaveBlock(first, firstParts, second.LastCommit)
+
+			// TODO: deliver block
 
 			// TODO: same thing for app - but we would need a way to
 			// get the hash without persisting the state

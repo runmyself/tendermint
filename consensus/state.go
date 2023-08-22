@@ -23,6 +23,7 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/libs/service"
 	tmsync "github.com/tendermint/tendermint/libs/sync"
+	"github.com/tendermint/tendermint/node/l2"
 	"github.com/tendermint/tendermint/p2p"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	sm "github.com/tendermint/tendermint/state"
@@ -77,6 +78,7 @@ type evidencePool interface {
 // The internal state machine receives input from peers, the internal validator, and from a timer.
 type State struct {
 	service.BaseService
+	l2Node l2.L2node
 
 	// config details
 	config        *cfg.ConsensusConfig
@@ -147,6 +149,7 @@ type StateOption func(*State)
 
 // NewState returns a new State.
 func NewState(
+	l2Node l2.L2node,
 	config *cfg.ConsensusConfig,
 	state sm.State,
 	blockExec *sm.BlockExecutor,
@@ -156,6 +159,7 @@ func NewState(
 	options ...StateOption,
 ) *State {
 	cs := &State{
+		l2Node:           l2Node,
 		config:           config,
 		blockExec:        blockExec,
 		blockStore:       blockStore,
@@ -1216,7 +1220,7 @@ func (cs *State) createProposalBlock() (block *types.Block, blockParts *types.Pa
 
 	proposerAddr := cs.privValidatorPubKey.Address()
 
-	return cs.blockExec.CreateProposalBlock(cs.Height, cs.state, commit, proposerAddr)
+	return cs.blockExec.CreateProposalBlock(cs.l2Node, cs.Height, cs.state, commit, proposerAddr)
 }
 
 // Enter: `timeoutPropose` after entering Propose.
@@ -1615,6 +1619,8 @@ func (cs *State) finalizeCommit(height int64) {
 		// Happens during replay if we already saved the block but didn't commit
 		logger.Debug("calling finalizeCommit on already stored block", "height", block.Height)
 	}
+
+	// TODO：deliver block
 
 	fail.Fail() // XXX
 

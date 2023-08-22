@@ -23,6 +23,7 @@ import (
 	mempl "github.com/tendermint/tendermint/mempool"
 	mempoolv0 "github.com/tendermint/tendermint/mempool/v0"
 	mempoolv1 "github.com/tendermint/tendermint/mempool/v1"
+	"github.com/tendermint/tendermint/node/l2"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/conn"
 	p2pmock "github.com/tendermint/tendermint/p2p/mock"
@@ -308,6 +309,7 @@ func TestCreateProposalBlock(t *testing.T) {
 
 	commit := types.NewCommit(height-1, 0, types.BlockID{}, nil)
 	block, _ := blockExec.CreateProposalBlock(
+		l2.NewMockL2Node(0),
 		height,
 		state, commit,
 		proposerAddr,
@@ -388,6 +390,7 @@ func TestMaxProposalBlockSize(t *testing.T) {
 
 	commit := types.NewCommit(height-1, 0, types.BlockID{}, nil)
 	block, _ := blockExec.CreateProposalBlock(
+		l2.NewMockL2Node(0),
 		height,
 		state, commit,
 		proposerAddr,
@@ -421,6 +424,7 @@ func TestNodeNewNodeCustomReactors(t *testing.T) {
 	require.NoError(t, err)
 
 	n, err := NewNode(config,
+		l2.NewMockL2Node(0),
 		privval.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.DefaultClientCreator(config.ProxyApp, config.ABCI, config.DBDir()),
