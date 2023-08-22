@@ -597,6 +597,7 @@ type CommitSig struct {
 	ValidatorAddress Address     `json:"validator_address"`
 	Timestamp        time.Time   `json:"timestamp"`
 	Signature        []byte      `json:"signature"`
+	BLSSignature     []byte      `json:"bls_signature"`
 }
 
 // NewCommitSigForBlock returns new CommitSig with BlockIDFlagCommit.
@@ -996,8 +997,11 @@ type Data struct {
 	// This means that block.AppHash does not include these txs.
 	Txs Txs `json:"txs"`
 
+	L2Config tmbytes.HexBytes
+	ZkConfig tmbytes.HexBytes
 	// Volatile
-	hash tmbytes.HexBytes
+	hash   tmbytes.HexBytes
+	zkHash tmbytes.HexBytes
 }
 
 // Hash returns the hash of the data

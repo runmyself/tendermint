@@ -234,6 +234,7 @@ func FromProto(pb *tmstate.State) (*State, error) { //nolint:golint
 func (state State) MakeBlock(
 	height int64,
 	txs []types.Tx,
+	l2Config, zkConfig []byte,
 	commit *types.Commit,
 	evidence []types.Evidence,
 	proposerAddress []byte,
